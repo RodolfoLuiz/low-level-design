@@ -3,29 +3,33 @@ import java.util.List;
 import java.util.Random;
 
 public class ElevatorController {
-    List<RequestListener> listeners = new ArrayList<>();
-    List<Elevator> elevators = new ArrayList<>();
+    private final List<Elevator> elevators;
 
-    public ElevatorController(){
-    }
-
-    public void createElevators(final int qty) {
-        if(!elevators.isEmpty()) {
-            return;
-        }
-        Random rand = new Random();
-        for (int i = 0; i < qty; i++) {
-            elevators.add(new Elevator(rand.nextInt(10), i, rand.nextInt(100), Direction.UP));
-            subscribe(elevators.get(i));
+    public ElevatorController(int numElevators, int capacity) {
+        elevators = new ArrayList<>();
+        for(int i = 0; i < numElevators; i++) {
+           Elevator elevator = new Elevator(i+1, capacity);
+           elevators.add(elevator);
+           elevators.add(elevator);
+           new Thread(elevator::run).start();
         }
     }
 
-    private void subscribe(RequestListener listener){
-        listeners.add(listener);
+    public void requestElevator(int sourceFloor, int destinationFloor) {
+        Elevator optiomalElevator = findOptimalElevator(sourceFloor, destinationFloor);
+        optiomalElevator.addRequest(new Request(sourceFloor, destinationFloor));
     }
-    public void notify(Request request){
-        for(RequestListener listener : listeners){
-            listener.update(request);
+
+    private Elevator findOptimalElevator(int sourceFloor, int destination) {
+        Elevator optimalElevator = null;
+        int minDistance = Integer.MAX_VALUE;
+        for(Elevator elevator : elevators) {
+            int distance = Math.abs(sourceFloor - elevator.getCurrentFloor());
+            if(distance < minDistance) {
+                minDistance = distance;
+                optimalElevator = elevator;
+            }
         }
+        return optimalElevator;
     }
 }
