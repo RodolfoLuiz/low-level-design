@@ -32,7 +32,7 @@ public class User {
     public String getPassword() {
         return password;
     }
-    public String getID() {
+    public String getId() {
         return ID;
     }
 }
